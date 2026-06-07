@@ -1,15 +1,25 @@
 import pyodbc
 import pandas as pd
 import streamlit as st
-# Veritabanı bağlantısını sağlayan fonksiyon
+
+# Veritabanı bağlantısını sağlayan fonksiyon Azure Cloud
 def get_connection():
     try:
+        # Şifreleri güvenlik için secrets.toml dosyasından çekiyoruz
+        server = st.secrets["database"]["server"]
+        database = st.secrets["database"]["database"]
+        username = st.secrets["database"]["username"]
+        password = st.secrets["database"]["password"]
 
         conn_str = (
-            r'DRIVER={SQL Server};'
-            r'SERVER=.\SQLEXPRESS;'
-            r'DATABASE=AkademikDanismanlikDB;'
-            r'Trusted_Connection=yes;'
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+            f"SERVER=tcp:{server},1433;"
+            f"DATABASE={database};"
+            f"UID={username};"
+            f"PWD={password};"
+            f"Encrypt=yes;"
+            f"TrustServerCertificate=no;"
+            f"Connection Timeout=30;"
         )
         conn = pyodbc.connect(conn_str)
         return conn
