@@ -52,7 +52,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# OTURUM (SESSION) VE GÜVENLİK DURUMLARI
+# OTURUM VE GÜVENLİK DURUMLARI
 
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
@@ -403,7 +403,7 @@ if not st.session_state['logged_in']:
                                     reg_ogr_no = st.text_input("Okul Numarası (10 Hane)", max_chars=10)
                                     reg_ad = st.text_input("Ad Soyad")
                                     reg_tc = st.text_input("TC Kimlik No", max_chars=11)
-                                    # YENİ EKLENEN BÖLÜM LİSTESİ BURADA KULLANILIYOR
+                                    # BÖLÜM LİSTESİ
                                     reg_bolum = st.selectbox("Bölüm", BOLUM_LISTESI)
                                     reg_sinif = st.selectbox("Sınıf", ["1. Sınıf", "2. Sınıf", "3. Sınıf", "4. Sınıf"])
                                     reg_mail = st.text_input("E-Posta Adresi")
@@ -416,6 +416,8 @@ if not st.session_state['logged_in']:
                                     if reg_submit:
                                         if not captcha:
                                             st.error("Doğrulama gerekli.")
+                                        elif len(reg_pass) < 8:
+                                            st.error("Hata: Şifreniz en az 8 karakter olmalıdır.")
                                         elif reg_pass != reg_pass_confirm:
                                             st.error("Şifreler uyuşmuyor.")
                                         elif check_user_exists(reg_ogr_no):
@@ -444,7 +446,7 @@ if not st.session_state['logged_in']:
                                     basvuru_unvan = st.selectbox("Ünvan",
                                                                  ["Prof. Dr.", "Doç. Dr.", "Dr. Öğr. Üyesi",
                                                                   "Arş. Gör."])
-                                    # YENİ EKLENEN BÖLÜM LİSTESİ BURADA DA KULLANILIYOR
+                                    # BÖLÜM LİSTESİ
                                     basvuru_bolum = st.selectbox("Bölüm", BOLUM_LISTESI)
                                     basvuru_mail = st.text_input("E-Posta")
                                     basvuru_pass = st.text_input("Şifre", type="password")
@@ -456,6 +458,8 @@ if not st.session_state['logged_in']:
                                     if dan_submit:
                                         if not captcha_dan:
                                             st.error("Doğrulama gerekli.")
+                                        elif len(basvuru_pass) < 8:
+                                            st.error("Hata: Şifreniz en az 8 karakter olmalıdır.")
                                         elif basvuru_pass != basvuru_pass_confirm:
                                             st.error("Şifreler uyuşmuyor.")
                                         elif check_user_exists(basvuru_tc):
@@ -477,7 +481,7 @@ if not st.session_state['logged_in']:
                                             else:
                                                 st.error(mail_msg)
 
-        # BEYAZ KARTLI, GÖLGELİ VE ÇİZGİLİ DUYURULAR
+        # DUYURULAR
         with col_duyuru:
             st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True)
             st.markdown(
