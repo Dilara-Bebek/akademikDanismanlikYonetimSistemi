@@ -91,6 +91,7 @@ if 'fp_code' not in st.session_state:
     st.session_state['fp_code'] = ""
 
 
+# GÜVENLİK FONKSİYONLARI
 def sifre_guc_kontrol(sifre):
     if len(sifre) < 8:
         return False, "Şifreniz en az 8 karakter olmalıdır."
@@ -105,6 +106,29 @@ def sifre_guc_kontrol(sifre):
     return True, ""
 
 
+def tc_kimlik_dogrula(tc):
+    if not tc.isdigit() or len(tc) != 11:
+        return False
+    if tc[0] == '0':
+        return False
+
+    digits = [int(d) for d in tc]
+
+    sum_odd = sum(digits[0:9:2])
+    sum_even = sum(digits[1:8:2])
+
+    digit10 = ((sum_odd * 7) - sum_even) % 10
+    if digits[9] != digit10:
+        return False
+
+    sum_all = sum(digits[0:10])
+    digit11 = sum_all % 10
+    if digits[10] != digit11:
+        return False
+
+    return True
+
+
 def reset_verification_state():
     st.session_state['verification_mode'] = False
     st.session_state['pending_user'] = None
@@ -115,7 +139,6 @@ def reset_verification_state():
 is_admin_page = st.query_params.get("admin") == "true"
 
 if not st.session_state['logged_in']:
-
 
     # GİZLİ ADMİN GİRİŞİ
     if is_admin_page:
@@ -358,8 +381,8 @@ if not st.session_state['logged_in']:
                         if dan_btn:
                             if st.session_state['login_attempts'] >= 3:
                                 st.error("🚨 İşleminiz engellendi.")
-                            elif len(dan_tc) != 11 or not dan_tc.isdigit():
-                                st.error("❌ TC Kimlik Numarası 11 haneli olmalıdır.")
+                            elif not tc_kimlik_dogrula(dan_tc):
+                                st.error("❌ Geçersiz TC Kimlik Numarası!")
                             elif not dan_pass:
                                 st.warning("⚠️ Şifre alanı boş bırakılamaz.")
                             else:
@@ -433,6 +456,8 @@ if not st.session_state['logged_in']:
 
                                         if not captcha:
                                             st.error("Doğrulama gerekli.")
+                                        elif not tc_kimlik_dogrula(reg_tc):
+                                            st.error("❌ Hata: Geçersiz TC Kimlik Numarası girdiniz!")
                                         elif not is_pass_valid:
                                             st.error(f"Güvenlik Uyarısı: {pass_msg}")
                                         elif reg_pass != reg_pass_confirm:
@@ -477,6 +502,8 @@ if not st.session_state['logged_in']:
 
                                         if not captcha_dan:
                                             st.error("Doğrulama gerekli.")
+                                        elif not tc_kimlik_dogrula(basvuru_tc):
+                                            st.error("❌ Hata: Geçersiz TC Kimlik Numarası girdiniz!")
                                         elif not is_pass_valid:
                                             st.error(f"Güvenlik Uyarısı: {pass_msg}")
                                         elif basvuru_pass != basvuru_pass_confirm:
