@@ -75,7 +75,7 @@ def show_student_mesajlasma():
                                     file_name=file_name,
                                     key=f"dl_{index}"
                                 )
-                    st.caption(f"{row['Tarih'].strftime('%H:%M')}")
+                    st.caption(f"{pd.to_datetime(row['Tarih']).strftime('%H:%M')}")
 
     # 3. YENİ MESAJ VE DOSYA GÖNDERME
     st.write("")
