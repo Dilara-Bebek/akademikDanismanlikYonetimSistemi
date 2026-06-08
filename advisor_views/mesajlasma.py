@@ -114,7 +114,7 @@ def show_advisor_mesajlasma():
                                                         file_name=file_name,
                                                         key=f"adv_dl_{index}"
                                                     )
-                                        st.caption(f"{row['Tarih'].strftime('%d %b %H:%M')}")
+                                        st.caption(f"{pd.to_datetime(row['Tarih']).strftime('%d %b %H:%M')}")
 
                         # Yeni Mesaj ve Dosya Gönderme Kutusu
                         st.write("")
