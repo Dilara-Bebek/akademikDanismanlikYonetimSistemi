@@ -97,7 +97,7 @@ def show_kullanici_yonetimi():
                     with col2:
                         yeni_unvan = st.selectbox("Ünvan",
                                                   ["Prof. Dr.", "Doç. Dr.", "Dr. Öğr. Üyesi", "Arş. Gör.", "Öğr. Gör."])
-                        #BÖLÜM LİSTESİ
+                        # BÖLÜM LİSTESİ
                         yeni_bolum = st.selectbox("Bölüm", BOLUM_LISTESI)
                         yeni_mail = st.text_input("E-Posta Adresi", placeholder="ornek@mail.com")
 
@@ -199,7 +199,11 @@ def show_kullanici_yonetimi():
                         time.sleep(1.5)
                         st.rerun()
                     else:
-                        st.error(f"❌ Silme işlemi başarısız: {del_msg}")
+
+                        if "⚠️ DİKKAT" in del_msg:
+                            st.warning(del_msg)
+                        else:
+                            st.error(f"❌ Silme işlemi başarısız: {del_msg}")
                 else:
                     st.error("⚠️ Lütfen silmek için tablodan bir kullanıcı seçiniz.")
 
