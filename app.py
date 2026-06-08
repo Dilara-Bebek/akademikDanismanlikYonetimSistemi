@@ -1,6 +1,7 @@
 import streamlit as st
 import time
 import pandas as pd
+import re
 from auth import login_user, register_user, check_user_exists, verify_user_email, reset_password
 from mail_service import generate_verification_code, send_verification_email
 from database import fetch_query
@@ -88,6 +89,20 @@ if 'fp_email' not in st.session_state:
     st.session_state['fp_email'] = ""
 if 'fp_code' not in st.session_state:
     st.session_state['fp_code'] = ""
+
+
+def sifre_guc_kontrol(sifre):
+    if len(sifre) < 8:
+        return False, "Şifreniz en az 8 karakter olmalıdır."
+    if not re.search(r"[A-Z]", sifre):
+        return False, "Şifre en az bir büyük harf içermelidir."
+    if not re.search(r"[a-z]", sifre):
+        return False, "Şifre en az bir küçük harf içermelidir."
+    if not re.search(r"[0-9]", sifre):
+        return False, "Şifre en az bir rakam (0-9) içermelidir."
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", sifre):
+        return False, "Şifre en az bir özel karakter (örn: !@#$) içermelidir."
+    return True, ""
 
 
 def reset_verification_state():
@@ -403,7 +418,7 @@ if not st.session_state['logged_in']:
                                     reg_ogr_no = st.text_input("Okul Numarası (10 Hane)", max_chars=10)
                                     reg_ad = st.text_input("Ad Soyad")
                                     reg_tc = st.text_input("TC Kimlik No", max_chars=11)
-                                    # BÖLÜM LİSTESİ
+
                                     reg_bolum = st.selectbox("Bölüm", BOLUM_LISTESI)
                                     reg_sinif = st.selectbox("Sınıf", ["1. Sınıf", "2. Sınıf", "3. Sınıf", "4. Sınıf"])
                                     reg_mail = st.text_input("E-Posta Adresi")
@@ -414,10 +429,12 @@ if not st.session_state['logged_in']:
                                                                        use_container_width=True)
 
                                     if reg_submit:
+                                        is_pass_valid, pass_msg = sifre_guc_kontrol(reg_pass)
+
                                         if not captcha:
                                             st.error("Doğrulama gerekli.")
-                                        elif len(reg_pass) < 8:
-                                            st.error("Hata: Şifreniz en az 8 karakter olmalıdır.")
+                                        elif not is_pass_valid:
+                                            st.error(f"Güvenlik Uyarısı: {pass_msg}")
                                         elif reg_pass != reg_pass_confirm:
                                             st.error("Şifreler uyuşmuyor.")
                                         elif check_user_exists(reg_ogr_no):
@@ -446,7 +463,7 @@ if not st.session_state['logged_in']:
                                     basvuru_unvan = st.selectbox("Ünvan",
                                                                  ["Prof. Dr.", "Doç. Dr.", "Dr. Öğr. Üyesi",
                                                                   "Arş. Gör."])
-                                    # BÖLÜM LİSTESİ
+
                                     basvuru_bolum = st.selectbox("Bölüm", BOLUM_LISTESI)
                                     basvuru_mail = st.text_input("E-Posta")
                                     basvuru_pass = st.text_input("Şifre", type="password")
@@ -456,10 +473,12 @@ if not st.session_state['logged_in']:
                                                                        use_container_width=True)
 
                                     if dan_submit:
+                                        is_pass_valid, pass_msg = sifre_guc_kontrol(basvuru_pass)
+
                                         if not captcha_dan:
                                             st.error("Doğrulama gerekli.")
-                                        elif len(basvuru_pass) < 8:
-                                            st.error("Hata: Şifreniz en az 8 karakter olmalıdır.")
+                                        elif not is_pass_valid:
+                                            st.error(f"Güvenlik Uyarısı: {pass_msg}")
                                         elif basvuru_pass != basvuru_pass_confirm:
                                             st.error("Şifreler uyuşmuyor.")
                                         elif check_user_exists(basvuru_tc):
