@@ -115,7 +115,7 @@ def login_user(username, password, expected_role=None):
     user = cursor.fetchone()
     conn.close()
 
-    # eritabanında öyle bir kullanıcı var mı ve şifresi uyuyor mu?
+    # Veritabanında öyle bir kullanıcı var mı ve şifresi uyuyor mu
     if not user or not verify_password(password, getattr(user, 'SifreHash', None)):
         return None
 
@@ -269,6 +269,7 @@ def delete_user(username):
     cursor = conn.cursor()
 
     try:
+        # 1. Kullanıcıyı ve Rolünü Bul
         cursor.execute("SELECT KullaniciID, Rol FROM KULLANICILAR WHERE KullaniciAdi = ?", (username,))
         user = cursor.fetchone()
 
@@ -278,17 +279,65 @@ def delete_user(username):
         kullanici_id = user[0]
         rol = str(user[1]).upper()
 
+        # 2. Danışmanın öğrencisi varsa silmeyi engelle
+        if "DANISMAN" in rol or "DANIŞMAN" in rol:
+            cursor.execute("SELECT DanismanID FROM DANISMANLAR WHERE KullaniciID = ?", (kullanici_id,))
+            dan_row = cursor.fetchone()
+            if dan_row:
+                dan_id = dan_row[0]
+
+                # Bu hocanın üzerine kayıtlı öğrenci var mı say
+                cursor.execute("SELECT COUNT(*) FROM OGRENCILER WHERE DanismanID = ?", (dan_id,))
+                ogrenci_sayisi = cursor.fetchone()[0]
+
+                # Eğer öğrencisi varsa işlemi iptal et ve net bir mesaj ver
+                if ogrenci_sayisi > 0:
+                    return False, f"⚠️ DİKKAT: Bu danışmana kayıtlı {ogrenci_sayisi} öğrenci bulunmaktadır! Silme işlemi yapabilmek için öncelikle 'Danışman Atama' sayfasından bu öğrencileri başka bir hocaya devretmelisiniz."
+
+        # 3. Ortak Verileri Temizle (Duyurular, Mesajlar)
+        try:
+            cursor.execute("DELETE FROM GENEL_DUYURULAR WHERE KullaniciID = ?", (kullanici_id,))
+        except:
+            pass
+
+        try:
+            cursor.execute("DELETE FROM MESAJLAR WHERE GonderenID = ? OR AliciID = ?", (kullanici_id, kullanici_id))
+        except:
+            pass
+
+        # 4. Alt Tabloları Temizle
         if "OGRENC" in rol or "ÖĞRENC" in rol:
+            cursor.execute("SELECT OgrenciID FROM OGRENCILER WHERE KullaniciID = ?", (kullanici_id,))
+            ogr_row = cursor.fetchone()
+            if ogr_row:
+                ogr_id = ogr_row[0]
+                for table in ["DERS_DURUMLARI", "GORUSME_NOTLARI", "RANDEVULAR"]:
+                    try:
+                        cursor.execute(f"DELETE FROM {table} WHERE OgrenciID = ?", (ogr_id,))
+                    except:
+                        pass
             cursor.execute("DELETE FROM OGRENCILER WHERE KullaniciID = ?", (kullanici_id,))
+
         elif "DANISMAN" in rol or "DANIŞMAN" in rol:
+            cursor.execute("SELECT DanismanID FROM DANISMANLAR WHERE KullaniciID = ?", (kullanici_id,))
+            dan_row = cursor.fetchone()
+            if dan_row:
+                dan_id = dan_row[0]
+                for table in ["GORUSME_NOTLARI", "RANDEVULAR"]:
+                    try:
+                        cursor.execute(f"DELETE FROM {table} WHERE DanismanID = ?", (dan_id,))
+                    except:
+                        pass
             cursor.execute("DELETE FROM DANISMANLAR WHERE KullaniciID = ?", (kullanici_id,))
 
+        # 5. Ana kullanıcıyı sil
         cursor.execute("DELETE FROM KULLANICILAR WHERE KullaniciID = ?", (kullanici_id,))
 
         conn.commit()
-        return True, "Kullanıcı başarıyla silindi."
+        return True, "Kullanıcı ve ilişkili tüm kayıtları başarıyla silindi."
     except Exception as e:
+        conn.rollback()
         print(f"Silme Hatası: {e}")
-        return False, "Sistem kaynaklı bir hata oluştu."
+        return False, f"Silme işlemi başarısız oldu: Veritabanı bütünlük kuralları."
     finally:
         conn.close()
