@@ -3,10 +3,12 @@ import bcrypt
 import re
 from database import get_connection
 
+
 # 1. GÜVENLİK ALGORİTMALARI
 def hash_password(password):
     hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     return hashed.decode('utf-8')
+
 
 def verify_password(plain_password, hashed_password):
     if not hashed_password:
@@ -19,6 +21,7 @@ def verify_password(plain_password, hashed_password):
         return bcrypt.checkpw(plain_password.encode('utf-8'), str(hashed_password).encode('utf-8'))
     except Exception:
         return False
+
 
 def validate_tc_algorithm(tc):
     if len(tc) != 11 or not tc.isdigit() or tc[0] == '0':
@@ -51,6 +54,7 @@ def validate_strong_password(password):
         return False, "Şifre en az bir özel karakter (örn: !@#$) içermelidir."
 
     return True, "Şifre güvenli."
+
 
 # 2. VERİTABANI İŞLEMLERİ
 
@@ -111,9 +115,16 @@ def login_user(username, password, expected_role=None):
     user = cursor.fetchone()
     conn.close()
 
+    # eritabanında öyle bir kullanıcı var mı ve şifresi uyuyor mu?
     if not user or not verify_password(password, getattr(user, 'SifreHash', None)):
         return None
 
+    # Python seviyesinde buyuk/kucuk harf eşleşmesi zorunluluğu
+    db_username = getattr(user, 'KullaniciAdi', '')
+    if username != db_username:
+        return None
+
+    # Rolü uyuyor mu
     if expected_role and expected_role.upper() not in str(getattr(user, 'Rol', '')).upper():
         return None
 
