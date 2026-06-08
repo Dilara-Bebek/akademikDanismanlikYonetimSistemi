@@ -15,7 +15,7 @@ def show_note_detail(note_id, df):
     st.divider()
 
     st.markdown("### 📝 Görüşme Özeti")
-    st.info(note['Özet'])
+    st.info(note['Ozet'])
 
     col1, col2 = st.columns(2)
     with col1:

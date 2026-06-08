@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import os  # Dosya (Fotoğraf) kontrolü için eklendi
+import os  # Dosya kontrolü için eklendi
 from database import fetch_query, execute_query
 import datetime
 
