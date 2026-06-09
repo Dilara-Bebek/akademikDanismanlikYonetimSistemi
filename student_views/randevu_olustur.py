@@ -120,7 +120,7 @@ def show_randevularim():
                         WHERE DanismanID = ? AND Tarih = ? AND Saat = ? AND Durum IN ('Bekliyor', 'Onaylandı')
                     """
                     df_s_check = fetch_query(check_student_query, (danisman_id, tarih_talep_str, saat_talep_str))
-                    cakisma_var_mi = df_s_check.iloc[0][0] > 0 if not df_s_check.empty else False
+                    cakisma_var_mi = df_s_check.iloc[0, 0] > 0 if not df_s_check.empty else False
 
                     if cakisma_var_mi:
                         st.error(

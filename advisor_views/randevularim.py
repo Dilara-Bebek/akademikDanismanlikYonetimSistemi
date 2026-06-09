@@ -207,7 +207,7 @@ def manuel_randevu_formu(danisman_id):
                         WHERE DanismanID = ? AND Tarih = ? AND Saat = ? AND Durum IN ('Bekliyor', 'Onaylandı')
                     """
                     df_check = fetch_query(check_query, (danisman_id, tarih_str, saat_str))
-                    cakisma_var_mi = df_check.iloc[0][0] > 0 if not df_check.empty else False
+                    cakisma_var_mi = df_check.iloc[0, 0] > 0 if not df_check.empty else False
 
                     if cakisma_var_mi:
                         st.error("🚨 SİSTEM ENGELİ: Seçtiğiniz tarih ve saatte zaten onaylı veya bekleyen başka bir randevunuz bulunuyor! Lütfen saati değiştirin.")
