@@ -43,7 +43,7 @@ def show_appointment_detail(r_id, df):
                 st.success("Randevu iptal edildi.")
                 st.rerun()
 
-    elif mevcut_durum == 'Onaylandı':
+    elif mevcut_durum in ['Onaylandı', 'Onaylandi']:
         c1, c2, c3 = st.columns(3)
         if c1.button("🔵 Tamamlandı", use_container_width=True, type="primary"):
             success = execute_query("UPDATE RANDEVULAR SET Durum = 'Tamamlandı' WHERE RandevuID = ?", (int(r_id),))
@@ -70,7 +70,7 @@ def show_appointment_detail(r_id, df):
                 st.rerun()
 
     # KİLİTLENMEYİ ENGELLEYEN GERİ ALMA SEÇENEĞİ
-    elif mevcut_durum in ['Tamamlandı', 'Gerçekleşmedi']:
+    elif mevcut_durum in ['Tamamlandı', 'Tamamlandi', 'Gerçekleşmedi', 'Gerceklesmedi']:
         if st.button("🔄 İşlemi Geri Al (Yeniden 'Onaylandı' Yap)", use_container_width=True, type="secondary"):
             success = execute_query("UPDATE RANDEVULAR SET Durum = 'Onaylandı' WHERE RandevuID = ?", (int(r_id),))
             if success:
