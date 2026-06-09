@@ -43,7 +43,6 @@ def show_appointment_detail(r_id, df):
                 st.success("Randevu iptal edildi.")
                 st.rerun()
 
-
     elif mevcut_durum == 'Onaylandı':
         c1, c2, c3 = st.columns(3)
         if c1.button("🔵 Tamamlandı", use_container_width=True, type="primary"):
@@ -68,6 +67,14 @@ def show_appointment_detail(r_id, df):
                 execute_query("INSERT INTO BILDIRIMLER (Baslik, Mesaj, OkunduMu, Tarih) VALUES ('Randevu İptali', ?, 0, GETDATE())",
                               (f"ID: {r_id} numaralı onaylı randevu danışman tarafından iptal edildi.",))
                 st.error("Randevu iptal edildi.")
+                st.rerun()
+
+    # KİLİTLENMEYİ ENGELLEYEN GERİ ALMA SEÇENEĞİ
+    elif mevcut_durum in ['Tamamlandı', 'Gerçekleşmedi']:
+        if st.button("🔄 İşlemi Geri Al (Yeniden 'Onaylandı' Yap)", use_container_width=True, type="secondary"):
+            success = execute_query("UPDATE RANDEVULAR SET Durum = 'Onaylandı' WHERE RandevuID = ?", (int(r_id),))
+            if success:
+                st.success("Randevu durumu başarıyla geri alındı, takvimde yeniden aktif!")
                 st.rerun()
     else:
         st.info(f"Bu randevu '{mevcut_durum}' statüsünde olduğu için yeni bir işlem yapılamaz.")
@@ -194,15 +201,26 @@ def manuel_randevu_formu(danisman_id):
                     saat_str = f"{m_saat.hour:02d}:{m_saat.minute:02d}:00"
                     tarih_str = m_tarih.strftime("%Y-%m-%d")
 
-                    insert_query = """
-                        INSERT INTO RANDEVULAR (OgrenciID, DanismanID, Tarih, Saat, Konu, Durum)
-                        VALUES (?, ?, ?, ?, ?, 'Onaylandı')
+                    #1. ÇAKIŞMA KONTROLÜ
+                    check_query = """
+                        SELECT COUNT(*) FROM RANDEVULAR 
+                        WHERE DanismanID = ? AND Tarih = ? AND Saat = ? AND Durum IN ('Bekliyor', 'Onaylandı')
                     """
-                    success = execute_query(insert_query, (secilen_ogr_id, danisman_id, tarih_str, saat_str, m_not))
-                    if success:
-                        execute_query("INSERT INTO BILDIRIMLER (Baslik, Mesaj, OkunduMu, Tarih) VALUES ('Yeni Randevu Planlandı', ?, 0, GETDATE())",
-                                      (f"Danışmanınız {m_ogr_isim} öğrencisi için {tarih_str} tarihinde yeni randevu oluşturdu.",))
-                        st.success(f"{m_ogr_isim} için randevu eklendi ve otomatik onaylandı.")
-                        st.rerun()
+                    df_check = fetch_query(check_query, (danisman_id, tarih_str, saat_str))
+                    cakisma_var_mi = df_check.iloc[0][0] > 0 if not df_check.empty else False
+
+                    if cakisma_var_mi:
+                        st.error("🚨 SİSTEM ENGELİ: Seçtiğiniz tarih ve saatte zaten onaylı veya bekleyen başka bir randevunuz bulunuyor! Lütfen saati değiştirin.")
                     else:
-                        st.error("Veritabanına kaydedilirken hata oluştu.")
+                        insert_query = """
+                            INSERT INTO RANDEVULAR (OgrenciID, DanismanID, Tarih, Saat, Konu, Durum)
+                            VALUES (?, ?, ?, ?, ?, 'Onaylandı')
+                        """
+                        success = execute_query(insert_query, (secilen_ogr_id, danisman_id, tarih_str, saat_str, m_not))
+                        if success:
+                            execute_query("INSERT INTO BILDIRIMLER (Baslik, Mesaj, OkunduMu, Tarih) VALUES ('Yeni Randevu Planlandı', ?, 0, GETDATE())",
+                                          (f"Danışmanınız, sizin adınıza {tarih_str} saat {saat_str[:5]} için yeni bir randevu oluşturdu.",))
+                            st.success(f"{m_ogr_isim} için randevu başarıyla eklendi.")
+                            st.rerun()
+                        else:
+                            st.error("Veritabanına kaydedilirken hata oluştu.")
