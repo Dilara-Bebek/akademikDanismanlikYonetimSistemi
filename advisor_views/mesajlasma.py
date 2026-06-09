@@ -8,6 +8,7 @@ UPLOAD_DIR = "uploads"
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
+
 def show_advisor_mesajlasma():
     if 'username' not in st.session_state:
         st.error("Oturum bilgisi bulunamadı.")
@@ -114,7 +115,13 @@ def show_advisor_mesajlasma():
                                                         file_name=file_name,
                                                         key=f"adv_dl_{index}"
                                                     )
-                                        st.caption(f"{pd.to_datetime(row['Tarih']).strftime('%d %b %H:%M')}")
+
+                                        # SAAT VE TARİH
+                                        aylar = {1: "Oca", 2: "Şub", 3: "Mar", 4: "Nis", 5: "May", 6: "Haz", 7: "Tem",
+                                                 8: "Ağu", 9: "Eyl", 10: "Eki", 11: "Kas", 12: "Ara"}
+                                        zaman = pd.to_datetime(row['Tarih']) + pd.Timedelta(hours=3)
+                                        tarih_str = f"{zaman.day:02d} {aylar[zaman.month]} {zaman.strftime('%H:%M')}"
+                                        st.caption(tarih_str)
 
                         # Yeni Mesaj ve Dosya Gönderme Kutusu
                         st.write("")

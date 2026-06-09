@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import datetime
 from database import fetch_query, execute_query
+
 # Dosyaların kaydedileceği klasör
 UPLOAD_DIR = "uploads"
 if not os.path.exists(UPLOAD_DIR):
@@ -57,8 +58,10 @@ def show_student_mesajlasma():
             for index, row in df_mesajlar.iterrows():
                 role = "user" if row['GonderenID'] == ogrenci_kid else "assistant"
                 label = "Siz" if role == "user" else danisman_ad
+                # ogrenci danisman gorsel
+                avatar = "👨‍🎓" if role == "user" else "👨‍🏫"
 
-                with st.chat_message(role):
+                with st.chat_message(role, avatar=avatar):
                     st.write(f"**{label}**")
                     if row['MesajMetni']:
                         st.write(row['MesajMetni'])
@@ -75,7 +78,13 @@ def show_student_mesajlasma():
                                     file_name=file_name,
                                     key=f"dl_{index}"
                                 )
-                    st.caption(f"{pd.to_datetime(row['Tarih']).strftime('%H:%M')}")
+
+                    # SAAT VE TARİH
+                    aylar = {1: "Oca", 2: "Şub", 3: "Mar", 4: "Nis", 5: "May", 6: "Haz", 7: "Tem", 8: "Ağu", 9: "Eyl",
+                             10: "Eki", 11: "Kas", 12: "Ara"}
+                    zaman = pd.to_datetime(row['Tarih']) + pd.Timedelta(hours=3)
+                    tarih_str = f"{zaman.day:02d} {aylar[zaman.month]} {zaman.strftime('%H:%M')}"
+                    st.caption(tarih_str)
 
     # 3. YENİ MESAJ VE DOSYA GÖNDERME
     st.write("")
@@ -97,7 +106,7 @@ def show_student_mesajlasma():
                 else:
                     saved_path = None
                     if uploaded_file is not None:
-                        # Benzersiz bir dosya adı oluşturuyoruz
+                        # Benzersiz bir dosya adı oluştur
                         timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
                         file_name = f"{timestamp}_{uploaded_file.name}"
                         saved_path = os.path.join(UPLOAD_DIR, file_name)
