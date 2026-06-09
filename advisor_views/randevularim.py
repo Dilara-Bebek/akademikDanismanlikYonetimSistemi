@@ -30,7 +30,6 @@ def show_appointment_detail(r_id, df):
         if c1.button("✅ Onayla", use_container_width=True, type="primary"):
             success = execute_query("UPDATE RANDEVULAR SET Durum = 'Onaylandı' WHERE RandevuID = ?", (int(r_id),))
             if success:
-                #  BİLDİRİM TETİKLEYİCİSİ
                 execute_query("INSERT INTO BILDIRIMLER (Baslik, Mesaj, OkunduMu, Tarih) VALUES ('Randevu Onayı', ?, 0, GETDATE())",
                               (f"ID: {r_id} numaralı randevu danışman tarafından onaylandı.",))
                 st.success("Randevu başarıyla onaylandı!")
@@ -39,18 +38,17 @@ def show_appointment_detail(r_id, df):
         if c2.button("❌ İptal Et", use_container_width=True):
             success = execute_query("UPDATE RANDEVULAR SET Durum = 'İptal Edildi' WHERE RandevuID = ?", (int(r_id),))
             if success:
-                #  BİLDİRİM TETİKLEYİCİSİ
                 execute_query("INSERT INTO BILDIRIMLER (Baslik, Mesaj, OkunduMu, Tarih) VALUES ('Randevu İptali', ?, 0, GETDATE())",
                               (f"ID: {r_id} numaralı randevu danışman tarafından iptal edildi.",))
                 st.success("Randevu iptal edildi.")
                 st.rerun()
+
 
     elif mevcut_durum == 'Onaylandı':
         c1, c2, c3 = st.columns(3)
         if c1.button("🔵 Tamamlandı", use_container_width=True, type="primary"):
             success = execute_query("UPDATE RANDEVULAR SET Durum = 'Tamamlandı' WHERE RandevuID = ?", (int(r_id),))
             if success:
-                #  BİLDİRİM TETİKLEYİCİSİ
                 execute_query("INSERT INTO BILDIRIMLER (Baslik, Mesaj, OkunduMu, Tarih) VALUES ('Sistem: Randevu Tamamlandı', ?, 0, GETDATE())",
                               (f"ID: {r_id} numaralı randevu başarıyla tamamlandı olarak işaretlendi.",))
                 st.success("Randevu başarıyla 'Tamamlandı' olarak işaretlendi!")
@@ -59,7 +57,6 @@ def show_appointment_detail(r_id, df):
         if c2.button("⚠️ Gerçekleşmedi", use_container_width=True):
             success = execute_query("UPDATE RANDEVULAR SET Durum = 'Gerçekleşmedi' WHERE RandevuID = ?", (int(r_id),))
             if success:
-                #  BİLDİRİM TETİKLEYİCİSİ
                 execute_query("INSERT INTO BILDIRIMLER (Baslik, Mesaj, OkunduMu, Tarih) VALUES ('Sistem Uyarı', ?, 0, GETDATE())",
                               (f"ID: {r_id} numaralı randevu danışman tarafından gerçekleşmedi olarak işaretlendi.",))
                 st.warning("Görüşme sağlanamadığı için 'Gerçekleşmedi' olarak işaretlendi.")
@@ -68,7 +65,6 @@ def show_appointment_detail(r_id, df):
         if c3.button("❌ İptal Et", use_container_width=True):
             success = execute_query("UPDATE RANDEVULAR SET Durum = 'İptal Edildi' WHERE RandevuID = ?", (int(r_id),))
             if success:
-                # BİLDİRİM TETİKLEYİCİSİ
                 execute_query("INSERT INTO BILDIRIMLER (Baslik, Mesaj, OkunduMu, Tarih) VALUES ('Randevu İptali', ?, 0, GETDATE())",
                               (f"ID: {r_id} numaralı onaylı randevu danışman tarafından iptal edildi.",))
                 st.error("Randevu iptal edildi.")
@@ -204,7 +200,6 @@ def manuel_randevu_formu(danisman_id):
                     """
                     success = execute_query(insert_query, (secilen_ogr_id, danisman_id, tarih_str, saat_str, m_not))
                     if success:
-                        #  BİLDİRİM TETİKLEYİCİSİ
                         execute_query("INSERT INTO BILDIRIMLER (Baslik, Mesaj, OkunduMu, Tarih) VALUES ('Yeni Randevu Planlandı', ?, 0, GETDATE())",
                                       (f"Danışmanınız {m_ogr_isim} öğrencisi için {tarih_str} tarihinde yeni randevu oluşturdu.",))
                         st.success(f"{m_ogr_isim} için randevu eklendi ve otomatik onaylandı.")
